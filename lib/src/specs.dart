@@ -110,15 +110,15 @@ class SnapSpec {
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
 
-    return other is SnapSpec &&
-        other.snap == snap &&
-        listEquals(other.snappings, snappings) &&
-        other.initialSnap == initialSnap &&
-        other.positioning == positioning &&
-        other.onSnap == onSnap;
+    return o is SnapSpec &&
+        o.snap == snap &&
+        listEquals(o.snappings, snappings) &&
+        o.initialSnap == initialSnap &&
+        o.positioning == positioning &&
+        o.onSnap == onSnap;
   }
 
   @override
@@ -143,14 +143,14 @@ class ScrollSpec {
   final ScrollPhysics? physics;
 
   /// Whether to wrap the scrollable content inside a `Scrollbar` widget.
-  final bool showScrollbar;
+  final Widget Function(Widget child)? scrollbarBuilder;
 
   /// Creates an object that defines the scroll effects, physics and more.
   const ScrollSpec({
     this.overscroll = true,
     this.overscrollColor,
     this.physics,
-    this.showScrollbar = false,
+    this.scrollbarBuilder,
   });
 
   /// Creates an overscroll effect with the given [color].
@@ -162,18 +162,18 @@ class ScrollSpec {
 
   @override
   String toString() {
-    return 'ScrollSpec(overscroll: $overscroll, overscrollColor: $overscrollColor, physics: $physics, showScrollbar: $showScrollbar)';
+    return 'ScrollSpec(overscroll: $overscroll, overscrollColor: $overscrollColor, physics: $physics, showScrollbar: $scrollbarBuilder)';
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
 
-    return other is ScrollSpec &&
-        other.overscroll == overscroll &&
-        other.overscrollColor == overscrollColor &&
-        other.physics == physics &&
-        other.showScrollbar == showScrollbar;
+    return o is ScrollSpec &&
+        o.overscroll == overscroll &&
+        o.overscrollColor == overscrollColor &&
+        o.physics == physics &&
+        o.scrollbarBuilder == scrollbarBuilder;
   }
 
   @override
@@ -181,19 +181,12 @@ class ScrollSpec {
     return overscroll.hashCode ^
         overscrollColor.hashCode ^
         physics.hashCode ^
-        showScrollbar.hashCode;
+        scrollbarBuilder.hashCode;
   }
 }
 
 /// {@macro sliding_sheet.parallaxSpec}
 class ParallaxSpec {
-  /// Creates an object that defines a parallax effect.
-  const ParallaxSpec({
-    this.enabled = true,
-    this.amount = 0.15,
-    this.endExtent,
-  }) : assert(amount >= 0.0 && amount <= 1.0);
-
   /// If true, the parallax effect will be applied
   /// to the body of the [SlidingSheet].
   final bool enabled;
@@ -215,18 +208,25 @@ class ParallaxSpec {
   /// to this extent aswell**
   final double? endExtent;
 
+  /// Creates an object that defines a parallax effect.
+  const ParallaxSpec({
+    this.enabled = true,
+    this.amount = 0.15,
+    this.endExtent,
+  }) : assert(amount >= 0.0 && amount <= 1.0);
+
   @override
   String toString() =>
       'ParallaxSpec(enabled: $enabled, amount: $amount, extent: $endExtent)';
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+  bool operator ==(Object o) {
+    if (identical(this, o)) return true;
 
-    return other is ParallaxSpec &&
-        other.enabled == enabled &&
-        other.amount == amount &&
-        other.endExtent == endExtent;
+    return o is ParallaxSpec &&
+        o.enabled == enabled &&
+        o.amount == amount &&
+        o.endExtent == endExtent;
   }
 
   @override

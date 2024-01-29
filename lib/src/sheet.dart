@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'sheet_container.dart';
 import 'specs.dart';
@@ -214,7 +216,7 @@ class SlidingSheet extends StatefulWidget {
 
   /// private, do not use!
   // ignore: public_member_api_docs
-  final _SlidingSheetRoute? _route;
+  final _SlidingSheetRoute? route;
 
   /// {@template sliding_sheet.isDismissable}
   /// If false, the `SlidingSheetDialog` will not be dismissable.
@@ -359,11 +361,10 @@ class SlidingSheet extends StatefulWidget {
     required this.liftOnScrollFooterElevation,
     this.body,
     this.parallaxSpec,
-    _SlidingSheetRoute<dynamic>? route,
+    this.route,
     this.isDismissable = true,
     this.onDismissPrevented,
-  })  : _route = route,
-        assert(builder != null || customBuilder != null),
+  })  : assert(builder != null || customBuilder != null),
         assert(builder == null || customBuilder == null),
         assert(snapSpec.snappings.length >= 2,
             'There must be at least two snapping extents to snap in between.'),
@@ -375,7 +376,7 @@ class SlidingSheet extends StatefulWidget {
         super(key: key);
 
   @override
-  State<SlidingSheet> createState() => _SlidingSheetState();
+  _SlidingSheetState createState() => _SlidingSheetState();
 }
 
 class _SlidingSheetState extends State<SlidingSheet>
@@ -435,7 +436,7 @@ class _SlidingSheetState extends State<SlidingSheet>
       ? _normalizeSnap(snapSpec.initialSnap!)
       : minExtent;
 
-  bool get isDialog => widget._route != null;
+  bool get isDialog => widget.route != null;
   ScrollSpec get scrollSpec => widget.scrollSpec;
   SnapSpec get snapSpec => widget.snapSpec;
   SnapPositioning get snapPositioning => snapSpec.positioning;
@@ -470,7 +471,7 @@ class _SlidingSheetState extends State<SlidingSheet>
   }
 
   // The current state of this sheet.
-  SheetState get state => SheetState._(
+  SheetState get state => SheetState(
         extent,
         extent: _reverseSnap(currentExtent),
         minExtent: _reverseSnap(minExtent),
@@ -523,7 +524,7 @@ class _SlidingSheetState extends State<SlidingSheet>
       setState(() => didCompleteInitialRoute = true);
     });
 
-    widget._route!.popped.then(
+    widget.route!.popped.then(
       (_) {
         if (!dismissUnderway) {
           dismissUnderway = true;
@@ -938,6 +939,7 @@ class _SlidingSheetState extends State<SlidingSheet>
         constraints: BoxConstraints(maxWidth: widget.maxWidth),
         child: SizedBox.expand(
           child: ValueListenableBuilder(
+            child: sheet,
             valueListenable: extent!._currentExtent,
             builder: (context, dynamic extent, sheet) {
               final translation = () {
@@ -980,7 +982,6 @@ class _SlidingSheetState extends State<SlidingSheet>
                 ),
               );
             },
-            child: sheet,
           ),
         ),
       ),
@@ -1016,9 +1017,9 @@ class _SlidingSheetState extends State<SlidingSheet>
       }(),
     );
 
-    if (scrollSpec.showScrollbar) {
-      scrollView = Scrollbar(
-        child: scrollView,
+    if (scrollSpec.scrollbarBuilder != null) {
+      scrollView = scrollSpec.scrollbarBuilder!(
+        scrollView,
       );
     }
 
@@ -1026,8 +1027,7 @@ class _SlidingSheetState extends State<SlidingSheet>
     if (scrollSpec.overscroll) {
       scrollView = GlowingOverscrollIndicator(
         axisDirection: AxisDirection.down,
-        color: scrollSpec.overscrollColor ??
-            Theme.of(context).colorScheme.secondary,
+        color: scrollSpec.overscrollColor ?? Theme.of(context).accentColor,
         child: scrollView,
       );
     }
@@ -1235,7 +1235,7 @@ class SheetState {
 
   /// A data class containing state information about the [SlidingSheet]
   /// at the time this state was emitted.
-  SheetState._(
+  SheetState(
     this._extent, {
     required this.extent,
     required this.isLaidOut,
@@ -1257,7 +1257,7 @@ class SheetState {
 
   /// A default constructor which can be used to initial `ValueNotifers` for instance.
   SheetState.inital()
-      : this._(null,
+      : this(null,
             extent: 0.0, minExtent: 0.0, maxExtent: 1.0, isLaidOut: false);
 
   /// The current scroll offset of the [Scrollable] inside the sheet.

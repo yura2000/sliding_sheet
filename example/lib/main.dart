@@ -495,8 +495,8 @@ class _ExampleState extends State<Example> {
               0.7,
             ],
           ),
-          scrollSpec: const ScrollSpec(
-            showScrollbar: true,
+          scrollSpec: ScrollSpec(
+            scrollbarBuilder: (child) => Scrollbar(child: child),
           ),
           color: Colors.teal,
           maxWidth: 500,
